@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: secure-kubernetes-cicd
+  namespace: dev
+spec:
+  selector:
+    app: secure-kubernetes-cicd
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: ClusterIP
