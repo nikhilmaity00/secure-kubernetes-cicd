@@ -49,3 +49,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push Docker Image
+        run: |
+          docker tag secure-kubernetes-cicd:${{ github.sha }} \
+            nikhilmaity/secure-kubernetes-cicd:${{ github.sha }}
+
+          docker push \
+            nikhilmaity/secure-kubernetes-cicd:${{ github.sha }}
