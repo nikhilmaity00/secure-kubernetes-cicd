@@ -31,3 +31,7 @@ jobs:
       - name: Run application tests
         run: |
           pytest app/test_app.py
+
+      - name: Build Docker Image
+        run: |
+          docker build -t secure-kubernetes-cicd:${{ github.sha }} ./app
