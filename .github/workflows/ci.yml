@@ -30,4 +30,4 @@ jobs:
 
       - name: Run application tests
         run: |
-          python -m compileall app
+          pytest app/test_app.py
