@@ -2,59 +2,54 @@
 
 set -euo pipefail
 
-NAMESPACE="dev"
-K8S_DIR="k8s"
-DEPLOYMENT="secure-kubernetes-cicd"
+echo "========================================"
+echo " Secure Kubernetes CI/CD Lab Bootstrap"
+echo "========================================"
+echo
 
 echo "==> Checking required tools..."
 
-command -v kubectl >/dev/null 2>&1 || {
-    echo "ERROR: kubectl is not installed or not in PATH."
-    exit 1
-}
+REQUIRED_TOOLS=(
+    kubectl
+    git
+    curl
+)
 
+for tool in "${REQUIRED_TOOLS[@]}"; do
+    if ! command -v "${tool}" >/dev/null 2>&1; then
+        echo "ERROR: Required tool '${tool}' is not installed or not in PATH."
+        exit 1
+    fi
+
+    echo "  ✔ ${tool}: $(command -v "${tool}")"
+done
+
+echo
 echo "==> Checking Kubernetes cluster connectivity..."
 
-kubectl cluster-info >/dev/null 2>&1 || {
+if ! kubectl cluster-info >/dev/null 2>&1; then
     echo "ERROR: Cannot connect to the Kubernetes cluster."
     exit 1
-}
+fi
 
-echo "==> Creating namespace: ${NAMESPACE}"
-
-kubectl create namespace "${NAMESPACE}" \
-    --dry-run=client \
-    -o yaml | kubectl apply -f -
-
-echo "==> Validating Kubernetes manifests..."
-
-kubectl apply \
-    --dry-run=client \
-    -f "${K8S_DIR}/deployment.yaml"
-
-kubectl apply \
-    --dry-run=client \
-    -f "${K8S_DIR}/service.yaml"
-
-echo "==> Applying Kubernetes manifests..."
-
-kubectl apply -f "${K8S_DIR}/deployment.yaml"
-kubectl apply -f "${K8S_DIR}/service.yaml"
-
-echo "==> Waiting for deployment rollout..."
-
-kubectl rollout status \
-    "deployment/${DEPLOYMENT}" \
-    -n "${NAMESPACE}" \
-    --timeout=120s
+echo "  ✔ Kubernetes API is reachable."
 
 echo
-echo "==> Kubernetes environment is ready."
-echo
+echo "==> Checking Kubernetes nodes..."
 
-echo "Pods:"
-kubectl get pods -n "${NAMESPACE}"
+kubectl get nodes
 
 echo
-echo "Service:"
-kubectl get service -n "${NAMESPACE}"
+echo "==> Checking Kustomize support..."
+
+if ! kubectl kustomize --help >/dev/null 2>&1; then
+    echo "ERROR: kubectl kustomize is not available."
+    exit 1
+fi
+
+echo "  ✔ Kustomize is available."
+
+echo
+echo "========================================"
+echo " Environment validation successful"
+echo "========================================"
